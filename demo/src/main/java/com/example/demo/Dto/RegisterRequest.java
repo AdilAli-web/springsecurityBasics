@@ -1,4 +1,7 @@
 package com.example.demo.Dto;
 
-public record RegisterRequest(String name,String email,String password) {
+
+import com.example.demo.Entity.Role;
+
+public record RegisterRequest(String name, String email, String password, Role role) {
 }

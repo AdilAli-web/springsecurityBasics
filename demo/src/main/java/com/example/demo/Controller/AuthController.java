@@ -4,9 +4,9 @@ import com.example.demo.Dto.RegisterRequest;
 import com.example.demo.Repo.UserRepo;
 import com.example.demo.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -15,19 +15,25 @@ import java.util.Map;
 public class AuthController {
 
     private final UserRepo userRepo;
-    private final PasswordEncoder passwordEncoder;
+
     @Autowired
     private UserService userService;
 
-    public AuthController(UserRepo userRepo, PasswordEncoder passwordEncoder) {
+    public AuthController(UserRepo userRepo) {
         this.userRepo = userRepo;
-        this.passwordEncoder = passwordEncoder;
+
     }
 
-
-    public Map<String,String> register(RegisterRequest request){
-        userService.registers(request);
+@PostMapping("/register")
+@ResponseStatus(HttpStatus.CREATED)
+    public Map<String,String> register(@RequestBody RegisterRequest request){
+       Map<String,String>  register=userService.registers(request);
+        return register;
     }
 
+    @GetMapping("/home")
+    public String home(){
+        return "Home page";
+    }
 
 }

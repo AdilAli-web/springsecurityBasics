@@ -1,11 +1,28 @@
 package com.example.demo.Entity;
 
 import jakarta.persistence.*;
-import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.List;
+
 
 @Table(schema = "User")
 @Entity
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+    @Column(nullable = false)
+    private String name;
+    @Column(nullable = false)
+    private String email;
+    @Column(nullable = false)
+    private String password;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    @Column(nullable = false)
+    private boolean enabled=true;
     public Long getId() {
         return id;
     }
@@ -42,9 +59,6 @@ public class User {
         return role;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
-    }
 
     public boolean isEnabled() {
         return enabled;
@@ -54,21 +68,9 @@ public class User {
         this.enabled = enabled;
     }
 
-    @Id
-            @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-@Column(nullable = false)
-private String name;
-@Column(nullable = false)
-private String email;
-@Column(nullable = false)
-private String password;
-@Enumerated(EnumType.STRING)
-@Column(nullable = false)
-private Role role;
-
-@Column(nullable = false)
-private boolean enabled=true;
+  public void setRole(Role role){
+        this.role=role;
+  }
 
 
 
