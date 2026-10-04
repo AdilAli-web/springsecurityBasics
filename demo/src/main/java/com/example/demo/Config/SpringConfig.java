@@ -1,5 +1,6 @@
 package com.example.demo.Config;
 
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @Configuration
@@ -34,7 +36,7 @@ import java.util.Base64;
 public class SpringConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
 
         return http
@@ -45,24 +47,28 @@ public class SpringConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/user/get").permitAll()
                         .requestMatchers("/api/auth/register").permitAll()
-//                        .requestMatchers("/api/auth/home").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/home").permitAll()
                         .requestMatchers("/api/v1/user/admin").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/user/admin/create").permitAll()
                         .requestMatchers("/api/v1/user/login").permitAll()
                         .anyRequest().authenticated()
 
                 )
+//                .oauth2ResourceServer(oauth2->oauth2.jwt(Customizer.withDefaults()))
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(jwt ->
                                 jwt.jwtAuthenticationConverter(
-                                        jwtAuthenticationConverter
+                                        jwtAuthenticationConverter()
                                 )
                         )
                 )
-        .build();
+                .build();
+
+
 //                there is one more -> form login uses in frontend  and http basic uses in post man to see working
 //                .formLogin(Customizer.withDefaults())
 //                .httpBasic(Customizer.withDefaults())
-//                .build();
 
 
     }
@@ -97,63 +103,100 @@ AuthenticationProvider authenticationProvider(UserDetailsService userDetailsServ
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(
-            SecretKey secretKey,
-            @Value("${jwt.issuer}") String issuer) {
-
-        NimbusJwtDecoder decoder =
-                NimbusJwtDecoder
-                        .withSecretKey(secretKey)
-                        .macAlgorithm(MacAlgorithm.HS256)
-                        .build();
-
-        decoder.setJwtValidator(
-                JwtValidators.createDefaultWithIssuer(
-                        issuer
-                )
+    SecretKey secretKey(@Value("${jwt.secret}") String secret) {
+        return Keys.hmacShaKeyFor(
+                secret.getBytes(StandardCharsets.UTF_8)
         );
-
-        return decoder;
     }
     @Bean
-    public SecretKey secretKey(@Value("${jwt.secret}") String secret){
-        byte[] decodedKey= Base64.getDecoder().decode(secret);
-        return new SecretKeySpec(
-                decodedKey,
-                "HmacSHA256"
-        );
-
+    JwtDecoder jwtDecoder(SecretKey secretKey) {
+        return NimbusJwtDecoder
+                .withSecretKey(secretKey)
+                .build();
     }
+
+
     @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-
-        JwtGrantedAuthoritiesConverter authoritiesConverter =
-                new JwtGrantedAuthoritiesConverter();
-
-        authoritiesConverter.setAuthoritiesClaimName(
-                "authorities"
-        );
-
-        authoritiesConverter.setAuthorityPrefix("");
-
-        JwtAuthenticationConverter
-                authenticationConverter =
-                new JwtAuthenticationConverter();
-
-        authenticationConverter
-                .setJwtGrantedAuthoritiesConverter(
-                        authoritiesConverter
-                );
-
-        return authenticationConverter;
-    }
-
-
-
-@Bean
-    public AuthenticationManager authenticationManager(DaoAuthenticationProvider authenticationProvider){
+    public AuthenticationManager authenticationManager(AuthenticationProvider authenticationProvider){
         return new ProviderManager(authenticationProvider);
 
+    }
+//
+//    @Bean
+//    public JwtDecoder jwtDecoder(
+//            SecretKey secretKey,
+//            @Value("${jwt.issuer}") String issuer) {
+//
+//        NimbusJwtDecoder decoder =
+//                NimbusJwtDecoder
+//                        .withSecretKey(secretKey)
+//                        .macAlgorithm(MacAlgorithm.HS256)
+//                        .build();
+//
+//        decoder.setJwtValidator(
+//                JwtValidators.createDefaultWithIssuer(
+//                        issuer
+//                )
+//        );
+//
+//        return decoder;
+//    }
+
+
+//    @Bean
+//    public SecretKey secretKey(@Value("${jwt.secret}") String secret){
+//        byte[] decodedKey= Base64.getDecoder().decode(secret);
+//        return new SecretKeySpec(
+//                decodedKey,
+//                "HmacSHA256"
+//        );
+//
+//    }
+
+    @Bean
+JwtAuthenticationConverter jwtAuthenticationConverter() {
+
+    JwtGrantedAuthoritiesConverter authoritiesConverter =
+            new JwtGrantedAuthoritiesConverter();
+
+    authoritiesConverter.setAuthoritiesClaimName("role");
+    authoritiesConverter.setAuthorityPrefix("");
+
+    JwtAuthenticationConverter converter =
+            new JwtAuthenticationConverter();
+
+    converter.setJwtGrantedAuthoritiesConverter(
+            authoritiesConverter
+    );
+
+    return converter;
 }
+//    @Bean
+//    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+//
+//        JwtGrantedAuthoritiesConverter authoritiesConverter =
+//                new JwtGrantedAuthoritiesConverter();
+//
+//        authoritiesConverter.setAuthoritiesClaimName(
+//                "authorities"
+//        );
+//
+//        authoritiesConverter.setAuthorityPrefix("");
+//
+//        JwtAuthenticationConverter
+//                authenticationConverter =
+//                new JwtAuthenticationConverter();
+//
+//        authenticationConverter
+//                .setJwtGrantedAuthoritiesConverter(
+//                        authoritiesConverter
+//                );
+//
+//        return authenticationConverter;
+//    }
+
+
+
+
 
 }

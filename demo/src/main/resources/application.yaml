@@ -16,13 +16,10 @@ spring:
 
 logging:
   level:
-    org.springframework.security: DEBUG
+    org.springframework.security: TRACE
     org.hibernate.SQL: DEBUG
 
 
 
-
 jwt:
-    secret:7fK2mQ9xL4vN8pR3tY6wZ1aB5cD0eG7H
-    issuer:adil-api
-    expiry:900
+    secret: 7fK2mQ9xL4vN8pR3tY6wZ1aB5cD0eG7H
