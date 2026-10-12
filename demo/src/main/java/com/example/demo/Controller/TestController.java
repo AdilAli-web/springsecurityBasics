@@ -1,5 +1,6 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Dto.CreatePatientRequest;
 import com.example.demo.Entity.Admin;
 import com.example.demo.Service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.net.CacheRequest;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
@@ -46,9 +48,9 @@ public class TestController {
     }
 
     @PostMapping("/admin/create")
-    public ResponseEntity<Admin> saveAdmin(@RequestBody Admin admin) {
+    public ResponseEntity<Admin> saveAdmin(@RequestBody CreatePatientRequest request) {
 
-        Admin savedAdmin = adminService.saveAdmin(admin);
+        Admin savedAdmin = adminService.saveAdmin(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedAdmin);
     }

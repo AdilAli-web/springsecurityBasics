@@ -14,6 +14,8 @@ public class Admin {
     Integer id;
     String PatientName;
     String RoomName;
-
+    @ManyToOne
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
 
 }

@@ -44,17 +44,38 @@ public class SpringConfig {
                 .cors(cors -> cors.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/user/get").permitAll()
+
                         .requestMatchers("/api/auth/register").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/home").permitAll()
-                        .requestMatchers("/api/v1/user/admin").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/user/admin/create").permitAll()
-                        .requestMatchers("/api/v1/user/login").permitAll()
-                        .anyRequest().authenticated()
 
+                        // Patient creation: public access
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.POST,
+                                "/api/v1/user/admin/create"
+                        ).permitAll()
+
+                        // Admin-only endpoint
+                        .requestMatchers("/api/v1/user/admin")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers("/api/v1/user/login").permitAll()
+
+                        .requestMatchers("/doctor/create").permitAll()
+                        .requestMatchers("/doctor/getAllDoctor").permitAll()
+
+                        // Admin-only doctor patient count
+                        .requestMatchers("/doctor/get/*/patient-count")
+                        .hasRole("ADMIN")
+                        .requestMatchers("/doctor/get/*/specific-patient")
+                        .hasRole("ADMIN")
+
+                        .anyRequest().authenticated()
                 )
+
 //                .oauth2ResourceServer(oauth2->oauth2.jwt(Customizer.withDefaults()))
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(jwt ->
@@ -91,6 +112,12 @@ AuthenticationProvider authenticationProvider(UserDetailsService userDetailsServ
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+    @Bean
+    SecretKey secretKey(@Value("${jwt.secret}") String secret) {
+        return Keys.hmacShaKeyFor(
+                secret.getBytes(StandardCharsets.UTF_8)
+        );
+    }
 
     @Bean
     public JwtEncoder jwtEncoder(
@@ -102,12 +129,7 @@ AuthenticationProvider authenticationProvider(UserDetailsService userDetailsServ
                 .build();
     }
 
-    @Bean
-    SecretKey secretKey(@Value("${jwt.secret}") String secret) {
-        return Keys.hmacShaKeyFor(
-                secret.getBytes(StandardCharsets.UTF_8)
-        );
-    }
+
     @Bean
     JwtDecoder jwtDecoder(SecretKey secretKey) {
         return NimbusJwtDecoder

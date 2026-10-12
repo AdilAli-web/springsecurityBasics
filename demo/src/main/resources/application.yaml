@@ -21,5 +21,6 @@ logging:
 
 
 
+
 jwt:
     secret: 7fK2mQ9xL4vN8pR3tY6wZ1aB5cD0eG7H
