@@ -59,7 +59,10 @@ public class DoctorService {
                         patients.getId()
                 ))
                 .toList();
+if(patient.isEmpty()){
+    throw new  NoSuchElementException("Doctor not found with this id");
 
+}
    return  new DoctorResponse(
            doctor.getId(),
            doctor.getDoctorName(),
